@@ -1,21 +1,61 @@
-import { Button } from "@/components/ui/button"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/sonner"
+import { useBotData } from "@/hooks/useBotData"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import DashboardPage from "@/app/dashboard/page"
+import TradesPage from "@/app/trades/page"
+import SettingsPage from "@/app/settings/page"
+import LoginPage from "@/app/login/page"
 
-export function App() {
+export default function App() {
+  const {
+    botData, trades, balance, pnlData, loading,
+    pausing, resuming, displayActive, botError,
+    pause, resume, refresh,
+  } = useBotData()
+
+  const sharedProps = {
+    botData, trades, balance, pnlData, loading,
+    pausing, resuming, displayActive, botError,
+    onPause: pause,
+    onResume: resume,
+    onRefresh: refresh,
+  }
+
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
+    <BrowserRouter>
+      <TooltipProvider>
+        <Toaster />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage {...sharedProps} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trades"
+            element={
+              <ProtectedRoute>
+                <TradesPage {...sharedProps} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage {...sharedProps} />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </TooltipProvider>
+    </BrowserRouter>
   )
 }
-
-export default App
