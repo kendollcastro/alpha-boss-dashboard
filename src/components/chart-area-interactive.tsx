@@ -15,15 +15,15 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 
 
-function formatPnl(val) {
+function formatPnl(val: any) {
   if (val == null) return "$0.00"
   const num = Number(val)
   const sign = num >= 0 ? "+" : ""
   return `${sign}$${Math.abs(num).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-function groupByDate(trades) {
-  const map = {}
+function groupByDate(trades: any) {
+  const map: Record<string, any> = {}
   for (const t of trades) {
     const key = t.date ? t.date.slice(0, 10) : (t.timestamp ? t.timestamp.slice(0, 10) : "unknown")
     if (!map[key]) map[key] = { date: key, total: 0, wins: 0, losses: 0, count: 0 }
@@ -33,10 +33,10 @@ function groupByDate(trades) {
     if (pnl > 0) map[key].wins += 1
     else map[key].losses += 1
   }
-  return Object.values(map).sort((a, b) => a.date.localeCompare(b.date))
+  return Object.values(map).sort((a: any, b: any) => a.date.localeCompare(b.date))
 }
 
-function groupByHour(trades) {
+function groupByHour(trades: any) {
   const hours = Array.from({ length: 24 }, (_, i) => ({ hour: i, trades: 0 }))
   for (const t of trades) {
     if (!t.timestamp) continue
@@ -46,7 +46,7 @@ function groupByHour(trades) {
   return hours
 }
 
-function getStreak(trades) {
+function getStreak(trades: any) {
   if (!trades.length) return { type: "neutral", count: 0 }
   let count = 1
   const last = Number(trades[trades.length - 1].pnl) || 0
@@ -59,7 +59,7 @@ function getStreak(trades) {
   return { type: isWin ? "win" : "loss", count }
 }
 
-export function ChartAreaInteractive({ trades = [], pnlData }) {
+export function ChartAreaInteractive({ trades = [], pnlData }: { trades?: any; pnlData: any }) {
   const isMobile = useIsMobile()
   const chartHeight = isMobile ? 180 : 250
 
@@ -67,25 +67,25 @@ export function ChartAreaInteractive({ trades = [], pnlData }) {
   const hasPnlData = pnlTrades.length > 0
 
   const sortedTrades = React.useMemo(
-    () => [...trades].sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()),
+    () => [...trades].sort((a: any, b: any) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()),
     [trades]
   )
 
   const last10 = sortedTrades.slice(-10)
 
   const bestTrade = React.useMemo(
-    () => pnlTrades.reduce((best, t) => (Number(t.pnl) || 0) > (Number(best.pnl) || 0) ? t : best, pnlTrades[0] || null),
+    () => pnlTrades.reduce((best: any, t: any) => (Number(t.pnl) || 0) > (Number(best.pnl) || 0) ? t : best, pnlTrades[0] || null),
     [pnlTrades]
   )
   const worstTrade = React.useMemo(
-    () => pnlTrades.reduce((worst, t) => (Number(t.pnl) || 0) < (Number(worst.pnl) || 0) ? t : worst, pnlTrades[0] || null),
+    () => pnlTrades.reduce((worst: any, t: any) => (Number(t.pnl) || 0) < (Number(worst.pnl) || 0) ? t : worst, pnlTrades[0] || null),
     [pnlTrades]
   )
 
   const streak = React.useMemo(() => getStreak(pnlTrades), [pnlTrades])
 
   const pnlTradesSorted = React.useMemo(
-    () => [...pnlTrades].sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()),
+    () => [...pnlTrades].sort((a: any, b: any) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()),
     [pnlTrades]
   )
 
@@ -124,7 +124,7 @@ export function ChartAreaInteractive({ trades = [], pnlData }) {
     )
   }
 
-  const lastPnl10 = hasPnlData ? pnlTrades.slice(-10).map(t => ({ v: Number(t.pnl) || 0 })) : []
+  const lastPnl10 = hasPnlData ? pnlTrades.slice(-10).map((t: any) => ({ v: Number(t.pnl) || 0 })) : []
   const streakDots = hasPnlData ? pnlTrades.slice(-10) : []
 
   return (
@@ -197,9 +197,9 @@ export function ChartAreaInteractive({ trades = [], pnlData }) {
           <CardContent className="pt-0">
             <div className="h-10 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={streakDots.map(t => ({ v: 1, pnl: Number(t.pnl) || 0 }))}>
+                <BarChart data={streakDots.map((t: any) => ({ v: 1, pnl: Number(t.pnl) || 0 }))}>
                   <Bar dataKey="v" radius={[2, 2, 0, 0]}>
-                    {streakDots.map((t, i) => (
+                    {streakDots.map((t: any, i: any) => (
                       <Cell key={i} fill={(Number(t.pnl) || 0) > 0 ? "#22c55e" : "#ef4444"} />
                     ))}
                   </Bar>
@@ -272,7 +272,7 @@ export function ChartAreaInteractive({ trades = [], pnlData }) {
                       content={<ChartTooltipContent indicator="dot" />}
                     />
                     <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-                      {dailyData.map((d, i) => (
+                      {dailyData.map((d: any, i: any) => (
                         <Cell key={i} fill={d.total >= 0 ? "var(--color-emerald-500, #22c55e)" : "var(--color-rose-500, #ef4444)"} />
                       ))}
                     </Bar>

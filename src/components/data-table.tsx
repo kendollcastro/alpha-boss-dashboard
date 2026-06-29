@@ -100,7 +100,7 @@ export const schema = z.object({
   pnl: z.number(),
 })
 
-function formatTime(ts) {
+function formatTime(ts: any) {
   if (!ts) return "—"
   try {
     const d = new Date(ts)
@@ -110,12 +110,12 @@ function formatTime(ts) {
   }
 }
 
-function formatPrice(val) {
+function formatPrice(val: any) {
   if (val == null) return "—"
   return `$${Number(val).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-function formatPnl(val) {
+function formatPnl(val: any) {
   if (val == null) return "$0.00"
   const num = Number(val)
   const sign = num >= 0 ? "+" : ""

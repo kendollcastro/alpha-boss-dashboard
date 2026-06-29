@@ -20,6 +20,10 @@ export default function Page({
   botData, loading,
   pausing, resuming, displayActive, botError,
   onPause, onResume, onRefresh,
+}: {
+  botData: any; loading: any;
+  pausing: any; resuming: any; displayActive: any; botError: any;
+  onPause: any; onResume: any; onRefresh: any;
 }) {
   return (
     <SidebarProvider

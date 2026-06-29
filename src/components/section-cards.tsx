@@ -9,47 +9,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { TrendingUpIcon, TrendingDownIcon, TrophyIcon, SkullIcon, ZapIcon } from "lucide-react"
+import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
 
-function formatCurrency(value) {
+function formatCurrency(value: any) {
   if (value == null) return "$0.00"
   const num = Number(value)
   const sign = num >= 0 ? "+" : ""
   return `${sign}$${Math.abs(num).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-function formatCurrencyAbsolute(value) {
+function formatCurrencyAbsolute(value: any) {
   if (value == null) return "$0.00"
   const num = Number(value)
   return `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-export function SectionCards({ botData, balance, pnlData }) {
+export function SectionCards({ botData, balance, pnlData }: { botData: any; balance: any; pnlData: any }) {
   const todayTrades = botData?.stats?.today ?? 0
   const totalTrades = botData?.stats?.total ?? 0
-  const todayPnl = Number(botData?.stats?.today_pnl ?? 0)
-  const winRate = botData?.stats?.win_rate
   const accountEquity = balance?.balances?.[0]?.totalEquity
 
   const pnlTotalPnl = Number(pnlData?.total_pnl ?? 0)
   const pnlWinRate = pnlData?.win_rate
-  const pnlTrades = pnlData?.trades ?? []
-
-  const bestPnlTrade = pnlTrades.length ? pnlTrades.reduce((b, t) => Number(t.pnl) > Number(b.pnl) ? t : b) : null
-  const worstPnlTrade = pnlTrades.length ? pnlTrades.reduce((w, t) => Number(t.pnl) < Number(w.pnl) ? t : w) : null
-
-  let streak = { type: "neutral", count: 0 }
-  if (pnlTrades.length) {
-    let count = 1
-    const last = Number(pnlTrades[pnlTrades.length - 1].pnl) || 0
-    const isWin = last > 0
-    for (let i = pnlTrades.length - 2; i >= 0; i--) {
-      const p = Number(pnlTrades[i].pnl) || 0
-      if ((p > 0) === isWin) count++
-      else break
-    }
-    streak = { type: isWin ? "win" : "loss", count }
-  }
 
   const trendPercent = totalTrades > 0 ? ((todayTrades / totalTrades) * 100).toFixed(1) : "0.0"
   const trendUp = todayTrades / totalTrades >= 0.5

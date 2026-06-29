@@ -13,6 +13,15 @@ export function SiteHeader({
   onPause,
   onResume,
   onRefresh,
+}: {
+  title?: string
+  botData: any
+  displayActive: any
+  pausing: any
+  resuming: any
+  onPause: any
+  onResume: any
+  onRefresh: any
 }) {
   const isPaper = botData?.paper_mode ?? true
 
