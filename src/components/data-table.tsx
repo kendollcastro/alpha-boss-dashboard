@@ -316,11 +316,14 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
         transition: transition,
       }}
     >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
+      {row.getVisibleCells().map((cell) => {
+        const hideMobile = ["drag", "select", "t1", "stop_loss", "actions"].includes(cell.column.id)
+        return (
+          <TableCell key={cell.id} className={hideMobile ? "hidden md:table-cell" : ""}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        )
+      })}
     </TableRow>
   )
 }
@@ -488,8 +491,9 @@ export function DataTable({
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
+                      const hideMobile = ["drag", "select", "t1", "stop_loss", "actions"].includes(header.id)
                       return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
+                        <TableHead key={header.id} colSpan={header.colSpan} className={hideMobile ? "hidden md:table-cell" : ""}>
                           {header.isPlaceholder
                             ? null
                             : flexRender(
