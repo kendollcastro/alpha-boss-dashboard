@@ -316,14 +316,11 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
         transition: transition,
       }}
     >
-      {row.getVisibleCells().map((cell) => {
-        const hideMobile = ["drag", "select", "t1", "stop_loss", "actions"].includes(cell.column.id)
-        return (
-          <TableCell key={cell.id} className={hideMobile ? "hidden md:table-cell" : ""}>
-            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-          </TableCell>
-        )
-      })}
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
     </TableRow>
   )
 }
@@ -486,14 +483,14 @@ export function DataTable({
             sensors={sensors}
             id={sortableId}
           >
-            <Table className="table-fixed">
+            <div className="min-w-[820px]">
+            <Table>
               <TableHeader className="sticky top-0 z-10 bg-muted">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
-                      const hideMobile = ["drag", "select", "t1", "stop_loss", "actions"].includes(header.id)
                       return (
-                        <TableHead key={header.id} colSpan={header.colSpan} className={hideMobile ? "hidden md:table-cell" : ""}>
+                        <TableHead key={header.id} colSpan={header.colSpan}>
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -506,7 +503,7 @@ export function DataTable({
                   </TableRow>
                 ))}
               </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
+              <TableBody>
                 {table.getRowModel().rows?.length ? (
                   <SortableContext
                     items={dataIds}
@@ -531,6 +528,7 @@ export function DataTable({
                 )}
               </TableBody>
             </Table>
+            </div>
           </DndContext>
         </div>
         <div className="flex items-center justify-between px-4">
