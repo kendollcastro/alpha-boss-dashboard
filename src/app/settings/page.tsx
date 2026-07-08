@@ -14,6 +14,10 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { PauseIcon, PlayIcon, LoaderIcon, RefreshCwIcon } from "lucide-react"
 
 export default function Page({
@@ -25,6 +29,45 @@ export default function Page({
   pausing: any; resuming: any; displayActive: any; botError: any;
   onPause: any; onResume: any; onRefresh: any;
 }) {
+  const [positions, setPositions] = React.useState(botData?.max_positions ?? 1)
+  const [useTP1, setUseTP1] = React.useState(botData?.tp1_enabled ?? true)
+  const [useTP2, setUseTP2] = React.useState(botData?.tp2_enabled ?? false)
+  const [useTP3, setUseTP3] = React.useState(botData?.tp3_enabled ?? false)
+  const [saving, setSaving] = React.useState(false)
+
+  React.useEffect(() => {
+    if (botData) {
+      setPositions(botData.max_positions ?? 1)
+      setUseTP1(botData.tp1_enabled ?? true)
+      setUseTP2(botData.tp2_enabled ?? false)
+      setUseTP3(botData.tp3_enabled ?? false)
+    }
+  }, [botData])
+
+  async function handleSave() {
+    setSaving(true)
+    try {
+      const token = localStorage.getItem("abt_token")
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          max_positions: positions,
+          tp1_enabled: useTP1,
+          tp2_enabled: useTP2,
+          tp3_enabled: useTP3,
+        }),
+      })
+      onRefresh()
+    } catch {
+      // silent
+    }
+    setSaving(false)
+  }
+
   return (
     <SidebarProvider
       style={
@@ -84,21 +127,91 @@ export default function Page({
                     </div>
                     <div className="flex gap-2 pt-2">
                       {displayActive ? (
-                        <Button variant="outline" onClick={onPause} disabled={pausing}>
-                          {pausing ? <LoaderIcon className="size-4 animate-spin" /> : <PauseIcon className="size-4" />}
-                          {pausing ? "Pausing..." : "Pause Bot"}
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" disabled={pausing}>
+                              {pausing ? <LoaderIcon className="size-4 animate-spin" /> : <PauseIcon className="size-4" />}
+                              {pausing ? "Pausing..." : "Pause Bot"}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Pause Bot</AlertDialogTitle>
+                              <AlertDialogDescription>Are you sure you want to pause the trading bot? No new positions will be opened while paused.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={onPause}>Pause</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       ) : (
-                        <Button variant="outline" onClick={onResume} disabled={resuming}>
-                          {resuming ? <LoaderIcon className="size-4 animate-spin" /> : <PlayIcon className="size-4" />}
-                          {resuming ? "Resuming..." : "Resume Bot"}
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" disabled={resuming}>
+                              {resuming ? <LoaderIcon className="size-4 animate-spin" /> : <PlayIcon className="size-4" />}
+                              {resuming ? "Resuming..." : "Resume Bot"}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Resume Bot</AlertDialogTitle>
+                              <AlertDialogDescription>Are you sure you want to resume the trading bot? It will start opening new positions again.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={onResume}>Resume</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                       <Button variant="outline" onClick={onRefresh}>
                         <RefreshCwIcon className="size-4" />
                         Refresh
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Trading Configuration</CardTitle>
+                    <CardDescription>Max positions and take-profit levels</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="positions" className="text-sm font-medium">Max Positions</Label>
+                      <Input
+                        id="positions"
+                        type="number"
+                        min={1}
+                        max={10}
+                        className="w-20 text-right"
+                        value={positions}
+                        onChange={(e) => setPositions(Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="tp1" className="text-sm font-medium">Take Profit 1</Label>
+                      <Switch id="tp1" checked={useTP1} onCheckedChange={setUseTP1} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="tp2" className="text-sm font-medium">Take Profit 2</Label>
+                      <Switch id="tp2" checked={useTP2} onCheckedChange={setUseTP2} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="tp3" className="text-sm font-medium">Take Profit 3</Label>
+                      <Switch id="tp3" checked={useTP3} onCheckedChange={setUseTP3} />
+                    </div>
+                    <Button
+                      variant="default"
+                      className="mt-2 w-full"
+                      onClick={handleSave}
+                      disabled={saving}
+                    >
+                      {saving ? <LoaderIcon className="size-4 animate-spin" /> : null}
+                      {saving ? "Saving..." : "Save Settings"}
+                    </Button>
                   </CardContent>
                 </Card>
 

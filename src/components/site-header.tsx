@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { PauseIcon, PlayIcon, RefreshCwIcon, LoaderIcon } from "lucide-react"
 
 export function SiteHeader({
@@ -52,15 +53,43 @@ export function SiteHeader({
             <RefreshCwIcon className="size-3.5" />
           </Button>
           {displayActive ? (
-            <Button variant="outline" size="sm" onClick={onPause} disabled={pausing}>
-              {pausing ? <LoaderIcon className="size-3.5 animate-spin" /> : <PauseIcon className="size-3.5" />}
-              {pausing ? "Pausing..." : "Pause"}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" disabled={pausing}>
+                  {pausing ? <LoaderIcon className="size-3.5 animate-spin" /> : <PauseIcon className="size-3.5" />}
+                  {pausing ? "Pausing..." : "Pause"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Pause Bot</AlertDialogTitle>
+                  <AlertDialogDescription>Are you sure you want to pause the trading bot? No new positions will be opened while paused.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onPause}>Pause</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           ) : (
-            <Button variant="outline" size="sm" onClick={onResume} disabled={resuming}>
-              {resuming ? <LoaderIcon className="size-3.5 animate-spin" /> : <PlayIcon className="size-3.5" />}
-              {resuming ? "Resuming..." : "Resume"}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" disabled={resuming}>
+                  {resuming ? <LoaderIcon className="size-3.5 animate-spin" /> : <PlayIcon className="size-3.5" />}
+                  {resuming ? "Resuming..." : "Resume"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Resume Bot</AlertDialogTitle>
+                  <AlertDialogDescription>Are you sure you want to resume the trading bot? It will start opening new positions again.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onResume}>Resume</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>

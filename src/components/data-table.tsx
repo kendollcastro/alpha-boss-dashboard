@@ -464,7 +464,8 @@ export function DataTable({
         value="outline"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 lg:overflow-x-visible">
+          <div className="min-w-[700px]">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
@@ -517,6 +518,7 @@ export function DataTable({
               </TableBody>
             </Table>
           </DndContext>
+          </div>
         </div>
         <div className="flex items-center justify-between px-4">
           <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
