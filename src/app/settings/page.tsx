@@ -1,4 +1,5 @@
 import * as React from "react"
+import { toast } from "sonner"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +21,14 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { PauseIcon, PlayIcon, LoaderIcon, RefreshCwIcon } from "lucide-react"
 
+function authHeaders() {
+  const token = localStorage.getItem("abt_token")
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
 export default function Page({
   botData, loading,
   pausing, resuming, displayActive, botError,
@@ -29,41 +38,50 @@ export default function Page({
   pausing: any; resuming: any; displayActive: any; botError: any;
   onPause: any; onResume: any; onRefresh: any;
 }) {
-  const [positions, setPositions] = React.useState(botData?.max_positions ?? 1)
-  const [useTP1, setUseTP1] = React.useState(botData?.tp1_enabled ?? true)
-  const [useTP2, setUseTP2] = React.useState(botData?.tp2_enabled ?? false)
-  const [useTP3, setUseTP3] = React.useState(botData?.tp3_enabled ?? false)
+  const [positions, setPositions] = React.useState(1)
+  const [useTP1, setUseTP1] = React.useState(true)
+  const [useTP2, setUseTP2] = React.useState(false)
+  const [useTP3, setUseTP3] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
 
   React.useEffect(() => {
-    if (botData) {
-      setPositions(botData.max_positions ?? 1)
-      setUseTP1(botData.tp1_enabled ?? true)
-      setUseTP2(botData.tp2_enabled ?? false)
-      setUseTP3(botData.tp3_enabled ?? false)
-    }
-  }, [botData])
+    fetch("/api/config", { headers: authHeaders() })
+      .then((res) => {
+        if (!res.ok) throw new Error("HTTP " + res.status)
+        return res.json()
+      })
+      .then((config) => {
+        setPositions(config.max_positions ?? 1)
+        setUseTP1(config.tp1 ?? true)
+        setUseTP2(config.tp2 ?? false)
+        setUseTP3(config.tp3 ?? false)
+      })
+      .catch(() => {
+        // fallback to botData defaults
+        setPositions(botData?.max_positions ?? 1)
+        setUseTP1(botData?.tp1 ?? true)
+        setUseTP2(botData?.tp2 ?? false)
+        setUseTP3(botData?.tp3 ?? false)
+      })
+  }, [])
 
   async function handleSave() {
     setSaving(true)
     try {
-      const token = localStorage.getItem("abt_token")
-      await fetch("/api/settings", {
+      const res = await fetch("/api/config", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           max_positions: positions,
-          tp1_enabled: useTP1,
-          tp2_enabled: useTP2,
-          tp3_enabled: useTP3,
+          tp1: useTP1,
+          tp2: useTP2,
+          tp3: useTP3,
         }),
       })
-      onRefresh()
+      if (!res.ok) throw new Error("HTTP " + res.status)
+      toast.success("Settings saved!")
     } catch {
-      // silent
+      toast.error("Failed to save settings")
     }
     setSaving(false)
   }
