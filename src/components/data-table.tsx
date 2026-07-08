@@ -147,6 +147,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     id: "drag",
     header: () => null,
     cell: ({ row }) => <DragHandle id={row.original.id} />,
+    size: 40,
   },
   {
     id: "select",
@@ -173,21 +174,24 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+    size: 40,
   },
   {
     accessorKey: "timestamp",
-    header: "Time",
+    header: () => <div className="text-left">Time</div>,
     cell: ({ row }) => {
-      return <div className="w-20 font-mono text-xs">{formatTime(row.original.timestamp)}</div>
+      return <div className="font-mono text-xs whitespace-nowrap">{formatTime(row.original.timestamp)}</div>
     },
     enableHiding: false,
+    size: 80,
   },
   {
     accessorKey: "symbol",
     header: "Symbol",
     cell: ({ row }) => (
-      <div className="w-16 font-medium">{row.original.symbol}</div>
+      <div className="font-medium truncate max-w-[72px]">{row.original.symbol}</div>
     ),
+    size: 76,
   },
   {
     accessorKey: "action",
@@ -198,33 +202,37 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       return (
         <Badge
           variant="outline"
-          className={isBuy ? "border-green-500 text-green-600 dark:text-green-400" : "border-red-500 text-red-600 dark:text-red-400"}
+          className={`whitespace-nowrap ${isBuy ? "border-green-500 text-green-600 dark:text-green-400" : "border-red-500 text-red-600 dark:text-red-400"}`}
         >
           {action}
         </Badge>
       )
     },
+    size: 64,
   },
   {
     accessorKey: "entry",
-    header: () => <div className="w-full text-right">Entry</div>,
+    header: () => <div className="text-right">Entry</div>,
     cell: ({ row }) => (
-      <div className="w-full text-right font-mono text-xs">{formatPrice(row.original.entry)}</div>
+      <div className="text-right font-mono text-xs whitespace-nowrap">{formatPrice(row.original.entry)}</div>
     ),
+    size: 90,
   },
   {
     accessorKey: "t1",
-    header: () => <div className="w-full text-right">T1</div>,
+    header: () => <div className="text-right">T1</div>,
     cell: ({ row }) => (
-      <div className="w-full text-right font-mono text-xs">{formatPrice(row.original.t1)}</div>
+      <div className="text-right font-mono text-xs whitespace-nowrap">{formatPrice(row.original.t1)}</div>
     ),
+    size: 80,
   },
   {
     accessorKey: "stop_loss",
-    header: () => <div className="w-full text-right">Stop</div>,
+    header: () => <div className="text-right">Stop</div>,
     cell: ({ row }) => (
-      <div className="w-full text-right font-mono text-xs">{formatPrice(row.original.stop_loss)}</div>
+      <div className="text-right font-mono text-xs whitespace-nowrap">{formatPrice(row.original.stop_loss)}</div>
     ),
+    size: 80,
   },
   {
     accessorKey: "status",
@@ -237,7 +245,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       else if (status === "STOPPED") badgeClass = "border-red-500 text-red-600 dark:text-red-400"
 
       return (
-        <Badge variant="outline" className={badgeClass}>
+        <Badge variant="outline" className={`whitespace-nowrap ${badgeClass}`}>
           {status === "OPEN" && <span className="mr-1 inline-block size-1.5 rounded-full bg-sky-500 animate-pulse" />}
           {status === "FILLED" ? <CircleCheckIcon className="fill-green-500 dark:fill-green-400" /> : null}
           {status === "STOPPED" ? <LoaderIcon /> : null}
@@ -245,22 +253,24 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         </Badge>
       )
     },
+    size: 90,
   },
   {
     accessorKey: "pnl",
-    header: () => <div className="w-full text-right">P&L</div>,
+    header: () => <div className="text-right">P&L</div>,
     cell: ({ row }) => {
       const pnl = Number(row.original.pnl)
       const isPositive = pnl >= 0
       return (
         <div
-          className="w-full text-right font-mono text-xs"
+          className="text-right font-mono text-xs whitespace-nowrap"
           style={{ color: isPositive ? "var(--color-green-500, #22c55e)" : "var(--color-red-500, #ef4444)" }}
         >
           {formatPnl(pnl)}
         </div>
       )
     },
+    size: 100,
   },
   {
     id: "actions",
@@ -286,6 +296,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         </DropdownMenuContent>
       </DropdownMenu>
     ),
+    size: 48,
   },
 ]
 
@@ -464,8 +475,7 @@ export function DataTable({
         value="outline"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 lg:overflow-x-visible">
-          <div className="min-w-[700px]">
+        <div className="overflow-x-auto rounded-lg border">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
@@ -473,7 +483,7 @@ export function DataTable({
             sensors={sensors}
             id={sortableId}
           >
-            <Table>
+            <Table className="table-fixed">
               <TableHeader className="sticky top-0 z-10 bg-muted">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
@@ -518,7 +528,6 @@ export function DataTable({
               </TableBody>
             </Table>
           </DndContext>
-          </div>
         </div>
         <div className="flex items-center justify-between px-4">
           <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
