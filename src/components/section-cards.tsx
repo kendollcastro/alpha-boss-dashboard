@@ -24,7 +24,7 @@ function formatCurrencyAbsolute(value: any) {
   return `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-export function SectionCards({ botData, balance, pnlData }: { botData: any; balance: any; pnlData: any }) {
+export function SectionCards({ botData, balance, pnlData, demoMode = true }: { botData: any; balance: any; pnlData: any; demoMode?: boolean }) {
   const todayTrades = botData?.stats?.today ?? 0
   const totalTrades = botData?.stats?.total ?? 0
   const accountEquity = balance?.balances?.[0]?.totalEquity
@@ -111,23 +111,25 @@ export function SectionCards({ botData, balance, pnlData }: { botData: any; bala
       </Card>
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Account Balance</CardDescription>
+          <CardDescription>{demoMode ? "Demo Balance (virtual)" : "Account Balance"}</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {accountEquity != null ? formatCurrencyAbsolute(accountEquity) : "—"}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
               <TrendingUpIcon />
-              Active
+              {demoMode ? "Demo" : "Active"}
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Total account equity{" "}
+            {demoMode ? "Virtual account equity" : "Total account equity"}{" "}
             <TrendingUpIcon className="size-4" />
           </div>
-          <div className="text-muted-foreground">Available trading capital</div>
+          <div className="text-muted-foreground">
+            {demoMode ? "Demo paper funds — not real money" : "Available trading capital"}
+          </div>
         </CardFooter>
       </Card>
     </div>

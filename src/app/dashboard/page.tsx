@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
+import { LiveMarket } from "@/components/live-market"
 import { SiteHeader } from "@/components/site-header"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -21,12 +22,13 @@ function OfflineBanner() {
 }
 
 export default function Page({
-  botData, trades, balance, pnlData, loading,
-  pausing, resuming, displayActive, botError,
+  botData, marketData, aiData, positions, trades, balance, pnlData, loading,
+  pausing, resuming, displayActive, botError, demoMode,
   onPause, onResume, onRefresh,
 }: {
-  botData: any; trades: any; balance: any; pnlData: any; loading: any;
-  pausing: any; resuming: any; displayActive: any; botError: any;
+  botData: any; marketData: any; aiData: any; positions: any;
+  trades: any; balance: any; pnlData: any; loading: any;
+  pausing: any; resuming: any; displayActive: any; botError: any; demoMode: any;
   onPause: any; onResume: any; onRefresh: any;
 }) {
   return (
@@ -43,8 +45,8 @@ export default function Page({
         {botError && <OfflineBanner />}
         <SiteHeader
           title="Nerve Center"
-          botData={botData}
           displayActive={displayActive}
+          demoMode={demoMode}
           pausing={pausing}
           resuming={resuming}
           onPause={onPause}
@@ -66,8 +68,15 @@ export default function Page({
                   ))}
                 </div>
               ) : (
-                <SectionCards botData={botData} balance={balance} pnlData={pnlData} />
+                <SectionCards botData={botData} balance={balance} pnlData={pnlData} demoMode={demoMode} />
               )}
+              <div className="px-4 lg:px-6">
+                <LiveMarket
+                  marketData={marketData}
+                  aiData={aiData}
+                  positions={positions}
+                />
+              </div>
               <div className="px-4 lg:px-6">
                 <ChartAreaInteractive trades={trades} pnlData={pnlData} />
               </div>

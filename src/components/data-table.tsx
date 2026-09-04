@@ -98,6 +98,11 @@ export const schema = z.object({
   contracts: z.number(),
   status: z.string(),
   pnl: z.number(),
+  sl_price_actual: z.number().optional().nullable(),
+  tp_price_actual: z.number().optional().nullable(),
+  exit_price: z.number().optional().nullable(),
+  result: z.string().optional().nullable(),
+  pnl_real: z.number().optional().nullable(),
 })
 
 function formatTime(ts: any) {
@@ -230,7 +235,9 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     accessorKey: "stop_loss",
     header: () => <div className="text-right">Stop</div>,
     cell: ({ row }) => (
-      <div className="text-right font-mono text-xs whitespace-nowrap">{formatPrice(row.original.stop_loss)}</div>
+      <div className="text-right font-mono text-xs whitespace-nowrap">
+        {row.original.sl_price_actual != null ? formatPrice(row.original.sl_price_actual) : formatPrice(row.original.stop_loss)}
+      </div>
     ),
     size: 80,
   },
@@ -256,21 +263,44 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     size: 90,
   },
   {
+    accessorKey: "exit",
+    header: () => <div className="text-right">Exit</div>,
+    cell: ({ row }) => {
+      const exit = row.original.exit_price ?? row.original.tp_price_actual
+      return (
+        <div className="text-right font-mono text-xs whitespace-nowrap">{exit != null ? formatPrice(exit) : "—"}</div>
+      )
+    },
+    size: 80,
+  },
+  {
     accessorKey: "pnl",
     header: () => <div className="text-right">P&L</div>,
     cell: ({ row }) => {
-      const pnl = Number(row.original.pnl)
+      const raw = row.original.pnl_real != null ? row.original.pnl_real : row.original.pnl
+      const pnl = Number(raw ?? 0)
       const isPositive = pnl >= 0
+      const result = (row.original.result || "").toUpperCase()
       return (
-        <div
-          className="text-right font-mono text-xs whitespace-nowrap"
-          style={{ color: isPositive ? "var(--color-green-500, #22c55e)" : "var(--color-red-500, #ef4444)" }}
-        >
-          {formatPnl(pnl)}
+        <div className="flex items-center justify-end gap-1.5">
+          {result && (
+            <Badge
+              variant="outline"
+              className={`whitespace-nowrap ${result === "WIN" ? "border-green-500 text-green-600 dark:text-green-400" : result === "LOSS" ? "border-red-500 text-red-600 dark:text-red-400" : ""}`}
+            >
+              {result}
+            </Badge>
+          )}
+          <div
+            className="text-right font-mono text-xs whitespace-nowrap"
+            style={{ color: isPositive ? "var(--color-green-500, #22c55e)" : "var(--color-red-500, #ef4444)" }}
+          >
+            {formatPnl(pnl)}
+          </div>
         </div>
       )
     },
-    size: 100,
+    size: 130,
   },
   {
     id: "actions",

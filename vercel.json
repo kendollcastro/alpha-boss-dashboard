@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://api.alphabosstrader.com/:path*" },
+    { "source": "/api/:path*", "destination": "http://147.182.176.41:8000/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

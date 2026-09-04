@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom"
+import { BASE_URL } from "@/lib/api"
 import {
   Avatar,
   AvatarFallback,
@@ -37,7 +38,7 @@ export function NavUser({
   async function handleLogout() {
     const token = localStorage.getItem("abt_token")
     try {
-      await fetch("/api/logout", {
+      await fetch(`${BASE_URL}/logout`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

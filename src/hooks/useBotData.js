@@ -1,46 +1,32 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { toast } from "sonner"
-
-function authHeaders() {
-  const token = localStorage.getItem("abt_token")
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-  }
-}
-
-function handleUnauthorized(res) {
-  if (res.status === 401) {
-    localStorage.removeItem("abt_token")
-    localStorage.removeItem("abt_name")
-    window.location.href = "/login"
-    return true
-  }
-  return false
-}
+import { apiGet, apiPost } from "@/lib/api"
 
 export function useBotData() {
   const [botData, setBotData] = useState(null)
+  const [marketData, setMarketData] = useState(null)
+  const [aiData, setAiData] = useState(null)
+  const [positions, setPositions] = useState([])
   const [trades, setTrades] = useState([])
   const [balance, setBalance] = useState(null)
+  const [pnlData, setPnlData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [pausing, setPausing] = useState(false)
   const [resuming, setResuming] = useState(false)
   const [optimisticActive, setOptimisticActive] = useState(null)
   const [botError, setBotError] = useState(false)
-  const [pnlData, setPnlData] = useState(null)
-  const balanceIntervalRef = useRef(null)
+  const marketIntervalRef = useRef(null)
+  const aiIntervalRef = useRef(null)
+  const positionsIntervalRef = useRef(null)
+  const tradesIntervalRef = useRef(null)
   const pnlIntervalRef = useRef(null)
-  const mainIntervalRef = useRef(null)
 
   const displayActive = optimisticActive !== null ? optimisticActive : botData?.active ?? false
+  const demoMode = botData?.demo_mode ?? true
 
   const fetchBotData = useCallback(async () => {
     try {
-      const res = await fetch("/api", { headers: authHeaders() })
-      if (handleUnauthorized(res)) return
-      if (!res.ok) throw new Error("HTTP " + res.status)
-      const json = await res.json()
+      const json = await apiGet("/")
       setBotData(json)
       setBotError(false)
     } catch {
@@ -48,12 +34,36 @@ export function useBotData() {
     }
   }, [])
 
+  const fetchMarket = useCallback(async () => {
+    try {
+      const json = await apiGet("/market")
+      setMarketData(json)
+    } catch {
+      // silent — sparkline/price shows stale
+    }
+  }, [])
+
+  const fetchAi = useCallback(async () => {
+    try {
+      const json = await apiGet("/ai")
+      setAiData(json)
+    } catch {
+      // silent
+    }
+  }, [])
+
+  const fetchPositions = useCallback(async () => {
+    try {
+      const json = await apiGet("/positions")
+      setPositions(json.positions ?? [])
+    } catch {
+      // silent
+    }
+  }, [])
+
   const fetchTrades = useCallback(async () => {
     try {
-      const res = await fetch("/api/trades", { headers: authHeaders() })
-      if (handleUnauthorized(res)) return
-      if (!res.ok) throw new Error("HTTP " + res.status)
-      const json = await res.json()
+      const json = await apiGet("/trades")
       setTrades(json.trades ?? [])
     } catch {
       toast.error("Failed to load trades")
@@ -62,10 +72,7 @@ export function useBotData() {
 
   const fetchPnl = useCallback(async () => {
     try {
-      const res = await fetch("/api/pnl", { headers: authHeaders() })
-      if (handleUnauthorized(res)) return
-      if (!res.ok) throw new Error("HTTP " + res.status)
-      const json = await res.json()
+      const json = await apiGet("/pnl")
       setPnlData(json)
     } catch {
       // silent
@@ -74,10 +81,7 @@ export function useBotData() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await fetch("/api/balance", { headers: authHeaders() })
-      if (handleUnauthorized(res)) return
-      if (!res.ok) throw new Error("HTTP " + res.status)
-      const json = await res.json()
+      const json = await apiGet("/balance")
       setBalance(json)
     } catch {
       // silent — card shows "—"
@@ -86,31 +90,41 @@ export function useBotData() {
 
   const refresh = useCallback(() => {
     fetchBotData()
+    fetchMarket()
+    fetchAi()
+    fetchPositions()
     fetchTrades()
     fetchBalance()
     fetchPnl()
-  }, [fetchBotData, fetchTrades, fetchBalance, fetchPnl])
+  }, [fetchBotData, fetchMarket, fetchAi, fetchPositions, fetchTrades, fetchBalance, fetchPnl])
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([fetchBotData(), fetchTrades(), fetchBalance(), fetchPnl()]).finally(() =>
-      setLoading(false)
-    )
+    Promise.all([
+      fetchBotData(),
+      fetchMarket(),
+      fetchAi(),
+      fetchPositions(),
+      fetchTrades(),
+      fetchBalance(),
+      fetchPnl(),
+    ]).finally(() => setLoading(false))
 
-    mainIntervalRef.current = setInterval(() => {
-      fetchBotData()
-      fetchTrades()
-    }, 10000)
-
-    balanceIntervalRef.current = setInterval(fetchBalance, 60000)
-    pnlIntervalRef.current = setInterval(fetchPnl, 60000)
+    // Real-time wiring — polling per backend spec
+    marketIntervalRef.current = setInterval(fetchMarket, 3000)      // 2-4s
+    aiIntervalRef.current = setInterval(fetchAi, 4000)              // 4s
+    positionsIntervalRef.current = setInterval(fetchPositions, 5000) // 5s
+    tradesIntervalRef.current = setInterval(fetchTrades, 6000)      // 5-8s
+    pnlIntervalRef.current = setInterval(fetchPnl, 30000)           // 10-30s
 
     return () => {
-      clearInterval(mainIntervalRef.current)
-      clearInterval(balanceIntervalRef.current)
+      clearInterval(marketIntervalRef.current)
+      clearInterval(aiIntervalRef.current)
+      clearInterval(positionsIntervalRef.current)
+      clearInterval(tradesIntervalRef.current)
       clearInterval(pnlIntervalRef.current)
     }
-  }, [fetchBotData, fetchTrades, fetchBalance])
+  }, [fetchBotData, fetchMarket, fetchAi, fetchPositions, fetchTrades, fetchPnl])
 
   useEffect(() => {
     if (botData?.active !== undefined) {
@@ -122,9 +136,7 @@ export function useBotData() {
     setPausing(true)
     setOptimisticActive(false)
     try {
-      const res = await fetch("/api/pause", { method: "POST", headers: authHeaders() })
-      if (handleUnauthorized(res)) return
-      if (!res.ok) throw new Error("HTTP " + res.status)
+      await apiPost("/pause")
       toast.success("Bot paused")
       await fetchBotData()
     } catch {
@@ -138,9 +150,7 @@ export function useBotData() {
     setResuming(true)
     setOptimisticActive(true)
     try {
-      const res = await fetch("/api/resume", { method: "POST", headers: authHeaders() })
-      if (handleUnauthorized(res)) return
-      if (!res.ok) throw new Error("HTTP " + res.status)
+      await apiPost("/resume")
       toast.success("Bot resumed")
       await fetchBotData()
     } catch {
@@ -151,9 +161,9 @@ export function useBotData() {
   }, [fetchBotData])
 
   return {
-    botData, trades, balance, pnlData, loading,
+    botData, marketData, aiData, positions, trades, balance, pnlData, loading,
     pausing, resuming,
-    displayActive, botError,
+    displayActive, botError, demoMode,
     pause, resume, refresh,
   }
 }

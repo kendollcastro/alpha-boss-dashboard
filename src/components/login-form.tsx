@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { LoaderIcon, EyeIcon, EyeOffIcon } from "lucide-react"
+import { BASE_URL } from "@/lib/api"
 
 export function LoginForm({
   className,
@@ -37,7 +38,7 @@ export function LoginForm({
     setSubmitting(true)
 
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch(`${BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

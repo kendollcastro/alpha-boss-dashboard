@@ -7,8 +7,8 @@ import { PauseIcon, PlayIcon, RefreshCwIcon, LoaderIcon } from "lucide-react"
 
 export function SiteHeader({
   title = "Alpha Boss Trader",
-  botData,
   displayActive,
+  demoMode = true,
   pausing,
   resuming,
   onPause,
@@ -16,15 +16,14 @@ export function SiteHeader({
   onRefresh,
 }: {
   title?: string
-  botData: any
   displayActive: any
+  demoMode?: boolean
   pausing: any
   resuming: any
   onPause: any
   onResume: any
   onRefresh: any
 }) {
-  const isPaper = botData?.paper_mode ?? true
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -45,9 +44,9 @@ export function SiteHeader({
           </Badge>
           <Badge
             variant="outline"
-            className={!isPaper ? "border-green-500 text-green-600 dark:text-green-400" : "border-amber-500 text-amber-600 dark:text-amber-400"}
+            className={demoMode ? "border-amber-500 text-amber-600 dark:text-amber-400" : "border-green-500 text-green-600 dark:text-green-400"}
           >
-            {!isPaper ? "LIVE" : "PAPER"}
+            {demoMode ? "DEMO" : "LIVE"}
           </Badge>
           <Button variant="outline" size="icon" onClick={onRefresh} title="Refresh">
             <RefreshCwIcon className="size-3.5" />

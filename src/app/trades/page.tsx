@@ -9,11 +9,11 @@ import {
 
 export default function Page({
   botData, trades, balance, loading,
-  pausing, resuming, displayActive, botError,
+  pausing, resuming, displayActive, botError, demoMode,
   onPause, onResume, onRefresh,
 }: {
   botData: any; trades: any; balance: any; loading: any;
-  pausing: any; resuming: any; displayActive: any; botError: any;
+  pausing: any; resuming: any; displayActive: any; botError: any; demoMode: any;
   onPause: any; onResume: any; onRefresh: any;
 }) {
   return (
@@ -29,8 +29,8 @@ export default function Page({
       <SidebarInset>
         <SiteHeader
           title="Trade History"
-          botData={botData}
           displayActive={displayActive}
+          demoMode={demoMode}
           pausing={pausing}
           resuming={resuming}
           onPause={onPause}

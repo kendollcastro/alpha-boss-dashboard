@@ -20,21 +20,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { PauseIcon, PlayIcon, LoaderIcon, RefreshCwIcon } from "lucide-react"
-
-function authHeaders() {
-  const token = localStorage.getItem("abt_token")
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  }
-}
+import { apiGet, apiPost } from "@/lib/api"
 
 export default function Page({
-  botData, loading,
+  botData, loading, demoMode,
   pausing, resuming, displayActive, botError,
   onPause, onResume, onRefresh,
 }: {
-  botData: any; loading: any;
+  botData: any; loading: any; demoMode: any;
   pausing: any; resuming: any; displayActive: any; botError: any;
   onPause: any; onResume: any; onRefresh: any;
 }) {
@@ -45,11 +38,7 @@ export default function Page({
   const [saving, setSaving] = React.useState(false)
 
   React.useEffect(() => {
-    fetch("/api/config", { headers: authHeaders() })
-      .then((res) => {
-        if (!res.ok) throw new Error("HTTP " + res.status)
-        return res.json()
-      })
+    apiGet("/config")
       .then((config) => {
         setPositions(config.max_positions ?? 1)
         setUseTP1(config.tp1 ?? true)
@@ -68,17 +57,12 @@ export default function Page({
   async function handleSave() {
     setSaving(true)
     try {
-      const res = await fetch("/api/config", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          max_positions: positions,
-          tp1: useTP1,
-          tp2: useTP2,
-          tp3: useTP3,
-        }),
+      await apiPost("/config", {
+        max_positions: positions,
+        tp1: useTP1,
+        tp2: useTP2,
+        tp3: useTP3,
       })
-      if (!res.ok) throw new Error("HTTP " + res.status)
       toast.success("Settings saved!")
     } catch {
       toast.error("Failed to save settings")
@@ -99,8 +83,8 @@ export default function Page({
       <SidebarInset>
         <SiteHeader
           title="Settings"
-          botData={botData}
           displayActive={displayActive}
+          demoMode={demoMode}
           pausing={pausing}
           resuming={resuming}
           onPause={onPause}
@@ -134,9 +118,9 @@ export default function Page({
                       <span className="text-sm font-medium">Mode</span>
                       <Badge
                         variant="outline"
-                        className={!botData?.paper_mode ? "border-green-500 text-green-600 dark:text-green-400" : "border-amber-500 text-amber-600 dark:text-amber-400"}
+                        className={demoMode ? "border-amber-500 text-amber-600 dark:text-amber-400" : "border-green-500 text-green-600 dark:text-green-400"}
                       >
-                        {!botData?.paper_mode ? "LIVE" : "PAPER"}
+                        {demoMode ? "DEMO" : "LIVE"}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
@@ -262,6 +246,33 @@ export default function Page({
                             : "—"}
                         </span>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Strategy Status</CardTitle>
+                    <CardDescription>Signal source & trading mode</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Signal source</span>
+                        <Badge variant="outline" className="border-sky-500 text-sky-600 dark:text-sky-400">
+                          AI-only
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">OCS strategy</span>
+                        <Badge variant="outline" className="border-muted text-muted-foreground">
+                          Inactive
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        AI-only mode / OCS signal inactive — the backend operates in
+                        AI-only mode and rejects external (webhook) signals.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
