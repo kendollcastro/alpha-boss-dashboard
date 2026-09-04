@@ -4,6 +4,7 @@ import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 import { LiveMarket } from "@/components/live-market"
+import { OpsCenter } from "@/components/ops-center"
 import { SiteHeader } from "@/components/site-header"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -22,12 +23,12 @@ function OfflineBanner() {
 }
 
 export default function Page({
-  botData, marketData, aiData, positions, trades, balance, pnlData, loading,
+  botData, marketData, aiData, positions, trades, balance, pnlData, opsData, loading,
   pausing, resuming, displayActive, botError, demoMode,
   onPause, onResume, onRefresh,
 }: {
   botData: any; marketData: any; aiData: any; positions: any;
-  trades: any; balance: any; pnlData: any; loading: any;
+  trades: any; balance: any; pnlData: any; opsData: any; loading: any;
   pausing: any; resuming: any; displayActive: any; botError: any; demoMode: any;
   onPause: any; onResume: any; onRefresh: any;
 }) {
@@ -70,6 +71,9 @@ export default function Page({
               ) : (
                 <SectionCards botData={botData} balance={balance} pnlData={pnlData} demoMode={demoMode} />
               )}
+              <div className="px-4 lg:px-6">
+                <OpsCenter opsData={opsData} />
+              </div>
               <div className="px-4 lg:px-6">
                 <LiveMarket
                   marketData={marketData}

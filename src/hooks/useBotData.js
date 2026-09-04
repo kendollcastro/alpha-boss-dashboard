@@ -10,6 +10,7 @@ export function useBotData() {
   const [trades, setTrades] = useState([])
   const [balance, setBalance] = useState(null)
   const [pnlData, setPnlData] = useState(null)
+  const [opsData, setOpsData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [pausing, setPausing] = useState(false)
   const [resuming, setResuming] = useState(false)
@@ -20,6 +21,7 @@ export function useBotData() {
   const positionsIntervalRef = useRef(null)
   const tradesIntervalRef = useRef(null)
   const pnlIntervalRef = useRef(null)
+  const opsIntervalRef = useRef(null)
 
   const displayActive = optimisticActive !== null ? optimisticActive : botData?.active ?? false
   const demoMode = botData?.demo_mode ?? true
@@ -88,6 +90,15 @@ export function useBotData() {
     }
   }, [])
 
+  const fetchOps = useCallback(async () => {
+    try {
+      const json = await apiGet("/ops")
+      setOpsData(json)
+    } catch {
+      // silent — no brief published yet
+    }
+  }, [])
+
   const refresh = useCallback(() => {
     fetchBotData()
     fetchMarket()
@@ -96,7 +107,8 @@ export function useBotData() {
     fetchTrades()
     fetchBalance()
     fetchPnl()
-  }, [fetchBotData, fetchMarket, fetchAi, fetchPositions, fetchTrades, fetchBalance, fetchPnl])
+    fetchOps()
+  }, [fetchBotData, fetchMarket, fetchAi, fetchPositions, fetchTrades, fetchBalance, fetchPnl, fetchOps])
 
   useEffect(() => {
     setLoading(true)
@@ -108,6 +120,7 @@ export function useBotData() {
       fetchTrades(),
       fetchBalance(),
       fetchPnl(),
+      fetchOps(),
     ]).finally(() => setLoading(false))
 
     // Real-time wiring — polling per backend spec
@@ -116,6 +129,7 @@ export function useBotData() {
     positionsIntervalRef.current = setInterval(fetchPositions, 5000) // 5s
     tradesIntervalRef.current = setInterval(fetchTrades, 6000)      // 5-8s
     pnlIntervalRef.current = setInterval(fetchPnl, 30000)           // 10-30s
+    opsIntervalRef.current = setInterval(fetchOps, 10000)           // brief refresh
 
     return () => {
       clearInterval(marketIntervalRef.current)
@@ -123,8 +137,9 @@ export function useBotData() {
       clearInterval(positionsIntervalRef.current)
       clearInterval(tradesIntervalRef.current)
       clearInterval(pnlIntervalRef.current)
+      clearInterval(opsIntervalRef.current)
     }
-  }, [fetchBotData, fetchMarket, fetchAi, fetchPositions, fetchTrades, fetchPnl])
+  }, [fetchBotData, fetchMarket, fetchAi, fetchPositions, fetchTrades, fetchPnl, fetchOps])
 
   useEffect(() => {
     if (botData?.active !== undefined) {
@@ -161,7 +176,7 @@ export function useBotData() {
   }, [fetchBotData])
 
   return {
-    botData, marketData, aiData, positions, trades, balance, pnlData, loading,
+    botData, marketData, aiData, positions, trades, balance, pnlData, opsData, loading,
     pausing, resuming,
     displayActive, botError, demoMode,
     pause, resume, refresh,

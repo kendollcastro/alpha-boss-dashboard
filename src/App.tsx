@@ -10,13 +10,13 @@ import LoginPage from "@/app/login/page"
 
 export default function App() {
   const {
-    botData, marketData, aiData, positions, trades, balance, pnlData, loading,
+    botData, marketData, aiData, positions, trades, balance, pnlData, opsData, loading,
     pausing, resuming, displayActive, botError, demoMode,
     pause, resume, refresh,
   } = useBotData()
 
   const sharedProps = {
-    botData, marketData, aiData, positions, trades, balance, pnlData, loading,
+    botData, marketData, aiData, positions, trades, balance, pnlData, opsData, loading,
     pausing, resuming, displayActive, botError, demoMode,
     onPause: pause,
     onResume: resume,
