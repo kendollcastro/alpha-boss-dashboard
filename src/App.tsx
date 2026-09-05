@@ -3,6 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
 import { useBotData } from "@/hooks/useBotData"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { AppLayout } from "@/components/app-layout"
 import DashboardPage from "@/app/dashboard/page"
 import TradesPage from "@/app/trades/page"
 import SettingsPage from "@/app/settings/page"
@@ -31,29 +32,44 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route
-            path="/dashboard"
             element={
-              <ProtectedRoute>
-                <DashboardPage {...sharedProps} />
-              </ProtectedRoute>
+              <AppLayout
+                botError={botError}
+                displayActive={displayActive}
+                demoMode={demoMode}
+                pausing={pausing}
+                resuming={resuming}
+                onPause={pause}
+                onResume={resume}
+                onRefresh={refresh}
+              />
             }
-          />
-          <Route
-            path="/trades"
-            element={
-              <ProtectedRoute>
-                <TradesPage {...sharedProps} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <SettingsPage {...sharedProps} />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage {...sharedProps} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/trades"
+              element={
+                <ProtectedRoute>
+                  <TradesPage {...sharedProps} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage {...sharedProps} />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
         </Routes>
       </TooltipProvider>
     </BrowserRouter>

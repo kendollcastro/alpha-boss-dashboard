@@ -1,7 +1,5 @@
 import * as React from "react"
 import { toast } from "sonner"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,25 +9,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { PauseIcon, PlayIcon, LoaderIcon, RefreshCwIcon } from "lucide-react"
+import { PauseIcon, PlayIcon, LoaderIcon } from "lucide-react"
 import { apiGet, apiPost } from "@/lib/api"
 
 export default function Page({
-  botData, loading, demoMode,
-  pausing, resuming, displayActive, botError,
-  onPause, onResume, onRefresh,
+  botData, demoMode,
+  pausing, resuming, displayActive,
+  onPause, onResume,
 }: {
-  botData: any; loading: any; demoMode: any;
-  pausing: any; resuming: any; displayActive: any; botError: any;
-  onPause: any; onResume: any; onRefresh: any;
+  botData: any; demoMode: any;
+  pausing: any; resuming: any; displayActive: any;
+  onPause: any; onResume: any;
 }) {
   const [positions, setPositions] = React.useState(1)
   const [useTP1, setUseTP1] = React.useState(true)
@@ -71,33 +65,7 @@ export default function Page({
   }
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader
-          title="Settings"
-          displayActive={displayActive}
-          demoMode={demoMode}
-          pausing={pausing}
-          resuming={resuming}
-          onPause={onPause}
-          onResume={onResume}
-          onRefresh={onRefresh}
-        />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="px-4 lg:px-6">
-                <h2 className="text-2xl font-semibold">Settings</h2>
-              </div>
-              <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2">
+    <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2">
                 <Card>
                   <CardHeader>
                     <CardTitle>Bot Control</CardTitle>
@@ -167,10 +135,6 @@ export default function Page({
                           </AlertDialogContent>
                         </AlertDialog>
                       )}
-                      <Button variant="outline" onClick={onRefresh}>
-                        <RefreshCwIcon className="size-4" />
-                        Refresh
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -277,10 +241,5 @@ export default function Page({
                   </CardContent>
                 </Card>
               </div>
-            </div>
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
   )
 }
